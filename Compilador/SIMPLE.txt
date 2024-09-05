@@ -1,0 +1,3 @@
+10 input A
+15 let jl = 5
+1 print 123123

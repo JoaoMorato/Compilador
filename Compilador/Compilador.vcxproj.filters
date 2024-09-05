@@ -21,8 +21,22 @@
     <ClCompile Include="ControlFile.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes.cpp">
+    <ClCompile Include="Analise.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
+    <ClCompile Include="Tokens.hpp">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClCompile>
+    <ClCompile Include="Tokens.cpp">
+      <Filter>Arquivos de Origem</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ControlFile.hpp">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
+    <ClInclude Include="Analise.hpp">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

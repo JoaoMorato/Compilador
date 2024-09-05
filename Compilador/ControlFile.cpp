@@ -1,42 +1,39 @@
 #include <fstream>
 #include <string>
-
-class ControlFile {
-private:
-	std::ifstream file;
-	std::ofstream outFile;
-
-public:
-	char character = 0;
-
-	ControlFile(std::string _file) {
-		file.open(_file);
-		if (!file.is_open())
-			throw "Nao foi possivel encontrar o arquivo.";
-
-		//outFile.open(_file + ".out", )
-	}
-
-	void MoveNext() {
-		if (!file.is_open())
-			return;
-		file.get();
-	}
+#include "ControlFile.hpp"
 
 
-	bool ReadNext() {
-		if (!file.is_open())
-			return false;
-		char c = file.peek();
-		if (c == EOF)
-			return false;
+//char character = 0;
 
-		character = c;
-		return true;
-	}
+ControlFile::ControlFile(){}
 
-	void Close() {
-		if (file.is_open())
-			file.close();
-	}
-};
+ControlFile::ControlFile(std::string _file) {
+	file.open(_file);
+	if (!file.is_open())
+		throw "Nao foi possivel encontrar o arquivo.";
+
+	//outFile.open(_file + ".out", )
+}
+
+void ControlFile::MoveNext() {
+	if (!file.is_open())
+		return;
+	file.get();
+}
+
+
+bool ControlFile::ReadNext() {
+	if (!file.is_open())
+		return false;
+	char c = file.peek();
+	if (c == EOF)
+		return false;
+
+	character = c;
+	return true;
+}
+
+void ControlFile::Close() {
+	if (file.is_open())
+		file.close();
+}

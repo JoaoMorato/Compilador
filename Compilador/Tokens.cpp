@@ -58,14 +58,19 @@ std::list<std::tuple<std::string, int>> Token::tokens = {
 std::list<std::tuple<int, std::tuple<int, int, int>, bool>> Token::unions = {
 	{-1, {41, 21, 41}, true}, // a + a
 	{-1, {41, 21, 51}, true}, // a + 1
+	{-1, {51, 21, 51}, false}, // 1 + 1
 	{-1, {41, 22, 41}, true}, // a - a
 	{-1, {41, 22, 51}, true}, // a - 1
+	{-1, {51, 22, 51}, false}, // 1 - 1
 	{-1, {41, 23, 41}, true}, // a * a
 	{-1, {41, 23, 51}, true}, // a * 1
+	{-1, {51, 23, 51}, false}, // 1 * 1
 	{-1, {41, 24, 41}, true}, // a / a
 	{-1, {41, 24, 51}, true}, // a / 1
+	{-1, {51, 24, 51}, false}, // 1 / 1
 	{-1, {41, 25, 41}, true}, // a % a
 	{-1, {41, 25, 51}, true}, // a % 1
+	{-1, {51, 25, 51}, false}, // 1 % 1
 	{-2, {41, 11, -1}, false}, // a = {tag: -1}
 	{-2, {41, 11, 41}, false}, // a = a
 	{-2, {41, 11, 51}, false}, // a = 1
@@ -106,7 +111,7 @@ int Token::GetToken(std::string str) {
 	auto t = tokens; // auto = var
 	
 	for (auto i = t.begin(); i != t.end();) {
-		std::string s = i->_Myfirst._Val;
+		std::string s = std::get<0>(*i);
 		if (s.length() != str.length())
 			i = t.erase(i);
 		else 
@@ -134,4 +139,38 @@ int Token::GetToken(std::string str) {
 	}
 
 	return std::get<1>(t.front());
+}
+
+int Token::RegisterVariable(std::string str) {
+	variables.push_back({ str, false });
+	return variables.size() - 1;
+}
+
+int Token::CheckVariables(std::string str) {
+	int posi = 0;
+
+	for (auto i = variables.begin(); i != variables.end(); ++i) {
+		std::string s = std::get<0>(*i);
+		if (str == s) break;
+		posi++;
+	}
+
+	return posi >= variables.size() ? -1 : posi;
+}
+
+bool Token::VariableInited(std::string str) {
+	for (auto i = variables.begin(); i != variables.end(); ++i) {
+		std::string s = std::get<0>(*i);
+		if (str != s) continue;
+		return std::get<1>(*i);
+	}
+}
+
+void Token::InitVariable(std::string str) {
+	for (auto i = variables.begin(); i != variables.end(); ++i) {
+		std::string s = std::get<0>(*i);
+		if (str != s) continue;
+		*i = { str, true };
+		return;
+	}
 }

@@ -16,8 +16,8 @@ public:
 	ControlFile();
 	ControlFile(std::string _file);
 
-	void MoveNext();
 	bool ReadNext();
+	void Reset();
 	void Close();
 };
 

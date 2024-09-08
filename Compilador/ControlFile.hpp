@@ -9,6 +9,7 @@ class ControlFile {
 private:
 	std::ifstream file;
 	std::ofstream outFile;
+	bool end = false;
 
 public:
 	char character = 0;

@@ -16,13 +16,14 @@ ControlFile::ControlFile(std::string _file) {
 }
 
 bool ControlFile::ReadNext() {
-	if (!file.is_open())
-		return false;
-	char c = file.get();
-	if (c == EOF)
+	if (!file.is_open() || end)
 		return false;
 
-	character = c;
+	character = file.get();
+
+	if (character == -1)
+		end = true;
+
 	return true;
 }
 
@@ -35,5 +36,7 @@ void ControlFile::Reset() {
 	if (!file.is_open())
 		return;
 
-	file.seekg(0, SEEK_SET);
+	file.clear();
+	file.seekg(0);
+	end = false;
 }

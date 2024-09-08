@@ -6,17 +6,25 @@
 #include <vector>
 #include <tuple>
 
-void Sintatica(ControlFile& c) {
+bool Semantica(ControlFile& c) {
+	int line = 1;
+	int line2 = -1;
+	bool ok = true;
 	std::string txt = "";
-	long line = 1;
-	while (c.ReadNext()) {
-		if (c.character == '\n') {
-			txt += c.character;
 
-			int col = AnaliseLexica(txt);
-			if (col) {
-				printf("Token nao reconhecido (%lu, %i)\r\n", line, col);
-			}
+	while (c.ReadNext()) {
+		if (c.character == '\n' || c.character == -1) {
+			if (c.character == -1)
+				txt += " EOF";
+			else
+				txt += c.character;
+
+			int l = AnaliseSemantica(line, line2, txt);
+
+			if (l <= line2)
+				ok = false;
+			else line2 = l;
+
 			line++;
 			txt.clear();
 			continue;
@@ -24,19 +32,26 @@ void Sintatica(ControlFile& c) {
 
 		txt += c.character;
 	}
+
+	if (!txt.empty())
+		ok = AnaliseSemantica(line, line2, txt) > line2 && ok;
+
+	return ok;
 }
 
-void Lexica(ControlFile& c) {
+bool Sintatica(ControlFile& c) {
 	std::string txt = "";
 	long line = 1;
+	bool ok = true;
 	while (c.ReadNext()) {
-		if (c.character == '\n') {
-			txt += c.character;
+		if (c.character == '\n' || c.character == -1) {
+			if (c.character == -1)
+				txt += " EOF";
+			else
+				txt += c.character;
 
-			int col = AnaliseLexica(txt);
-			if (col) {
-				printf("Token nao reconhecido (%lu, %i)\r\n", line, col);
-			}
+			ok = AnaliseSintatica(line, txt) && ok;
+
 			line++;
 			txt.clear();
 			continue;
@@ -44,19 +59,63 @@ void Lexica(ControlFile& c) {
 
 		txt += c.character;
 	}
+
+	if (!txt.empty())
+		ok = AnaliseLexica(line, txt) && ok;
+
+	if (!Token::end)
+		printf("ERRO: Token 'end' nao encontrado. (%i, 1)\r\n", line);
+
+	return ok && Token::end;
+}
+
+bool Lexica(ControlFile& c) {
+	std::string txt = "";
+	long line = 1;
+	bool ok = true;
+	while (c.ReadNext()) {
+		if (c.character == '\n' || c.character == -1) {
+			if (c.character == -1)
+				txt += " EOF";
+			else
+				txt += c.character;
+
+			ok = AnaliseLexica(line, txt) && ok;
+
+			line++;
+			txt.clear();
+			continue;
+		}
+
+		txt += c.character;
+	}
+
+	if (!txt.empty())
+		ok = AnaliseLexica(line, txt) && ok;
+	return ok;
 }
 
 int main() {
 	std::string file = "F:\\Projetos\\Compilador\\Compilador\\SIMPLE.txt"; // Insira o nome do arquivo aqui
 
 	ControlFile c = ControlFile(file);
+	bool ok = true;
 
-	Lexica(c);
-	c.Reset();
-	Sintatica(c);
-	c.Reset();
+	Token t;
 
+	ok = Lexica(c) && ok;
+	c.Reset();
+	printf("\r\n");
+	ok = Sintatica(c) && ok;
+	c.Reset();
+	printf("\r\n");
+	ok = Semantica(c) && ok;
+	printf("\r\n");
 
 	c.Close();
+	if (ok)
+		printf("Execucao terminada com sucesso.");
+	else
+		printf("Execucao terminada com erro(s).");
 }
 

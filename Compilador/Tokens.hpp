@@ -9,15 +9,17 @@
 class Token {
 private:
 	static std::list<std::tuple<std::string, int>> tokens;
-	static std::list<std::tuple<int, std::tuple<int, int, int>, bool>> unions;
+	static std::list<std::tuple<int, std::tuple<int, int, int>, bool>> merge;
 	static std::list<std::tuple<std::string, bool>> variables;
-	static std::list<std::tuple<int, char, int>> precedencia;
+
 public:
-	int GetToken(std::string);
-	int RegisterVariable(std::string);
-	int CheckVariables(std::string);
-	bool VariableInited(std::string);
-	void InitVariable(std::string);
+	static bool end;
+	static int GetToken(std::string);
+	static int RegisterVariable(std::string);
+	static int CheckVariables(std::string);
+	static bool VariableInited(std::string);
+	static void InitVariable(std::string);
+	static int CheckTokens(int a, int b = 0, int c = 0);
 };
 
 #endif // !_TOKENS_

@@ -4,7 +4,8 @@
 
 #include <string>
 
-int AnaliseLexica(std::string linha);
-
+bool AnaliseLexica(int line, std::string linha);
+bool AnaliseSintatica(int line, std::string linha);
+int AnaliseSemantica(int line, int oldLine, std::string linha);
 
 #endif // _ANALISE_

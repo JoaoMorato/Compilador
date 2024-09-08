@@ -1,101 +1,121 @@
+#include "Tokens.hpp"
+#include "ControlFile.hpp"
+#include "Analise.hpp"
+
 #include <iostream>
 #include <vector>
 #include <tuple>
-#include "ControlFile.cpp"
-#include "Nodes.cpp"
 
-ControlFile c;
-std::vector<std::tuple<long long, std::string>> tokens_v;
-
-
-bool Special(char c) {
-	switch (c) {
-		case '=':
-		case '+':
-		case '*':
-		case '-':
-		case '/':
-		case '(':
-		case ')':
-			return true;
-	}
-	return false;
-}
-
-int BlankSpace(char c) {
-	switch (c) {
-	case ' ':
-		return 1;
-	case '\n':
-	case '\r':
-		return 2;
-	}
-	return 0;
-}
-
-int main(int argc, char* argv[]) {
-	if (argc < 2) {
-		printf("Nenhum arquivo passado como argumento.");
-		return 1;
-	}
-
-	c = ControlFile(argv[1]);
-
+bool Semantica(ControlFile& c) {
+	int line = 1;
+	int line2 = -1;
+	bool ok = true;
 	std::string txt = "";
-	long line = -1;
-	long line2 = 1;
-	long column = 1;
-	bool lineRead = false;
+
 	while (c.ReadNext()) {
-		if (!lineRead) {
-			if (std::isdigit(c.character)) {
+		if (c.character == '\n' || c.character == -1) {
+			if (c.character == -1)
+				txt += " EOF";
+			else
 				txt += c.character;
-				c.MoveNext();
-				continue;
-			}
-			if (txt.empty() && BlankSpace(c.character) == 1) {
-				c.MoveNext();
-				column++;
-				continue;
-			}
-			long aux = std::stoi(txt);
-			if (aux <= line) {
-				printf("ERRO: Numero da linha deve ser maior que a anterior. Linha anterior: %ll, linha atual: %ll [Linha: %ll; Coluna: %ll]", line, aux, aux, column);
-				break;
-			}
-			line = aux;
-			if (BlankSpace(c.character) != 1) {
-				printf("ERRO:Token nao compreendido, tente separar codigo da enumeracao da linha [Linha: %ll; Coluna: %ll]", line, column);
-				break;
-			} else {
-				c.MoveNext();
-				column++;
-			}
-			printf("[51, %i, (%ll, %ll)]\n", line2, column);
-			line2++;
-			column += txt.length();
-			lineRead = true;
+
+			int l = AnaliseSemantica(line, line2, txt);
+
+			if (l <= line2)
+				ok = false;
+			else line2 = l;
+
+			line++;
+			txt.clear();
 			continue;
 		}
 
-		if (Special(c.character)) {
-			if (txt.empty()) {
-				printf("ERRO: Faltando expressao antes de '%c' [Linha: %ll; Coluna: %ll]", c.character, line, column);
-				break;
-			}
-		}
-		if (BlankSpace(c.character) == 1) {
-			column++;
-			c.MoveNext();
+		txt += c.character;
+	}
+
+	if (!txt.empty())
+		ok = AnaliseSemantica(line, line2, txt) > line2 && ok;
+
+	return ok;
+}
+
+bool Sintatica(ControlFile& c) {
+	std::string txt = "";
+	long line = 1;
+	bool ok = true;
+	while (c.ReadNext()) {
+		if (c.character == '\n' || c.character == -1) {
+			if (c.character == -1)
+				txt += " EOF";
+			else
+				txt += c.character;
+
+			ok = AnaliseSintatica(line, txt) && ok;
+
+			line++;
+			txt.clear();
 			continue;
 		}
-		char a = c.character;
-		if (a >= 'A' && a <= 'Z') {
-			int aux = 'A' - a;
-			a = 'a' + aux;
-		}
+
+		txt += c.character;
 	}
+
+	if (!txt.empty())
+		ok = AnaliseLexica(line, txt) && ok;
+
+	if (!Token::end)
+		printf("ERRO: Token 'end' nao encontrado. (%i, 1)\r\n", line);
+
+	return ok && Token::end;
+}
+
+bool Lexica(ControlFile& c) {
+	std::string txt = "";
+	long line = 1;
+	bool ok = true;
+	while (c.ReadNext()) {
+		if (c.character == '\n' || c.character == -1) {
+			if (c.character == -1)
+				txt += " EOF";
+			else
+				txt += c.character;
+
+			ok = AnaliseLexica(line, txt) && ok;
+
+			line++;
+			txt.clear();
+			continue;
+		}
+
+		txt += c.character;
+	}
+
+	if (!txt.empty())
+		ok = AnaliseLexica(line, txt) && ok;
+	return ok;
+}
+
+int main() {
+	std::string file = "F:\\Projetos\\Compilador\\Compilador\\SIMPLE.txt"; // Insira o nome do arquivo aqui
+
+	ControlFile c = ControlFile(file);
+	bool ok = true;
+
+	Token t;
+
+	ok = Lexica(c) && ok;
+	c.Reset();
+	printf("\r\n");
+	ok = Sintatica(c) && ok;
+	c.Reset();
+	printf("\r\n");
+	ok = Semantica(c) && ok;
+	printf("\r\n");
 
 	c.Close();
+	if (ok)
+		printf("Execucao terminada com sucesso.");
+	else
+		printf("Execucao terminada com erro(s).");
 }
 

@@ -129,7 +129,13 @@
   <ItemGroup>
     <ClCompile Include="Compilador.cpp" />
     <ClCompile Include="ControlFile.cpp" />
-    <ClCompile Include="Nodes.cpp" />
+    <ClCompile Include="Analise.cpp" />
+    <ClCompile Include="Tokens.cpp" />
+    <ClCompile Include="Tokens.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Analise.hpp" />
+    <ClInclude Include="ControlFile.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

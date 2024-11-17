@@ -7,8 +7,8 @@ std::string ValidaToken(int value, std::string str, int lastToken) {
 	switch (value) {
 	case 41:
 		if (lastToken == 62 || lastToken == 63) {
-			if (Token::CheckVariables(str) < 0)
-				Token::RegisterVariable(str);
+			if (Token::CheckVariables(str, false) < 0)
+				Token::RegisterVariable(str, false);
 			Token::InitVariable(str);
 			break;
 		}
@@ -16,7 +16,7 @@ std::string ValidaToken(int value, std::string str, int lastToken) {
 			return "Token nao inicializado.";
 		break;
 	case 51:
-		if (lastToken == 65 && !Token::CheckVariables(str))
+		if (lastToken == 65 && !Token::CheckVariables(str, true))
 			return "Label nao registrado.";
 		break;
 	}
@@ -24,8 +24,8 @@ std::string ValidaToken(int value, std::string str, int lastToken) {
 	return "";
 }
 
-bool AnalisarSequenciaToken(std::vector<std::tuple<int, int>> lista, int line) {
-	while (lista.size() > 1) {
+bool AnalisarSequenciaToken(std::vector<std::tuple<int, std::string>> lista, int line) {
+	while (lista.size() > 0) {
 		auto aux = lista[lista.size() - 1];
 		int a = std::get<0>(aux);
 		int b = 0;
@@ -37,23 +37,25 @@ bool AnalisarSequenciaToken(std::vector<std::tuple<int, int>> lista, int line) {
 			aux = lista[lista.size() - 1];
 			b = std::get<0>(aux);
 			lista.pop_back();
+		} else if (result != 100) goto fim;
 
-			result = Token::CheckTokens(b, a);
-		}
+		result = Token::CheckTokens(b, a);
 
 		if (lista.size() && result == 100) {
 			auto h = lista[lista.size() - 1];
 			c = std::get<0>(h);
 			lista.pop_back();
+		} else if(result != 100) goto fim;
 
-			result = Token::CheckTokens(c, b, a);
-		}
+		result = Token::CheckTokens(c, b, a);
+
+	fim:
 
 		if (a == 67 || b == 67 || c == 67)
 			Token::end = true;
 
 		if (result == 100) {
-			printf("ERRO: Expressao nao compreendida. (%i, %i)\r\n", line, std::get<1>(aux));
+			printf("ERRO: Expressao nao compreendida.\r\n");
 			return false;
 		}
 
@@ -165,9 +167,10 @@ bool AnaliseSintatica(int line, std::string linha) {
 	int posi = 0;
 	int coluna = 1;
 	bool label = false;
-	std::vector<std::tuple<int, int>> lista;
+	std::vector<std::tuple<int, std::string>> lista;
 	// 0 letra, 1 num, 2 especial
 	int tipo = -1;
+	bool comentario = false;
 
 	while (posi < linha.length()) {
 		if (linha[posi] == '\r') {
@@ -204,9 +207,14 @@ bool AnaliseSintatica(int line, std::string linha) {
 				return false;
 			}
 
-			int token = Token::CheckVariables(str);
+			int token = Token::CheckVariables(str, value == 51);
 
-			lista.push_back({ value, coluna });
+			lista.push_back({ value, str });
+			if (value == 61) {
+				comentario = true;
+				break;
+			}
+
 			tipo = -1;
 			coluna = posi + 1;
 			str.clear();
@@ -242,7 +250,7 @@ bool AnaliseSintatica(int line, std::string linha) {
 		posi++;
 	}
 
-	if (!str.empty()) {
+	if (!str.empty() && !comentario) {
 		int a = Token::GetToken(str);
 		int lastToken = 0;
 
@@ -256,8 +264,10 @@ bool AnaliseSintatica(int line, std::string linha) {
 			return false;
 		}
 
-		lista.push_back({ a, coluna });
+		lista.push_back({ a, str });
 	}
+
+	Token::tokensRegisted.push_back(lista);
 
 	return AnalisarSequenciaToken(lista, line);
 }
@@ -269,6 +279,7 @@ bool AnaliseLexica(int line, std::string linha) {
 	bool comentario = false;
 	// 0 letra, 1 num, 2 especial
 	int tipo = -1;
+	int vOld = 0;
 
 	while (posi < linha.length()) {
 		if (linha[posi] == '\r') {
@@ -284,7 +295,7 @@ bool AnaliseLexica(int line, std::string linha) {
 		jmp:
 			int value = Token::GetToken(str);
 
-			int token = Token::CheckVariables(str);
+			int token = Token::CheckVariables(str, value == 51 && (vOld == 0 || vOld == 65));
 
 			if (comentario && value != 10)
 				goto jmp2;
@@ -294,18 +305,19 @@ bool AnaliseLexica(int line, std::string linha) {
 				return false;
 			}
 
-			if (value == 51 || (token == -1 && value == 41))
-				token = Token::RegisterVariable(str);
+			if ((value == 51 || value == 41) && token == -1)
+				token = Token::RegisterVariable(str, value == 51 && (vOld == 0 || vOld == 65));
 
 			if (token == -1)
-				printf("[%02i,  , (%02i, %02i)]\r\n", value, line, coluna);
+				printf("[%02i,   , (%02i, %02i)]\r\n", value, line, coluna);
 			else
-				printf("[%02i, %i, (%02i, %02i)]\r\n", value, token, line, coluna);
+				printf("[%02i, %02i, (%02i, %02i)]\r\n", value, token, line, coluna);
 
 			if (value == 61)
 				comentario = true;
 
 		jmp2:
+			vOld = value;
 			tipo = -1;
 			coluna = posi + 1;
 			str.clear();
@@ -349,15 +361,15 @@ bool AnaliseLexica(int line, std::string linha) {
 			return false;
 		}
 
-		int token = Token::CheckVariables(str);
+		int token = Token::CheckVariables(str, value == 51);
 
 		if (value == 51 || (token == -1 && value == 41))
-			token = Token::RegisterVariable(str);
+			token = Token::RegisterVariable(str, value == 51);
 
 		if (token == -1)
-			printf("[%02i,  , (%02i, %02i)]\r\n", value, line, coluna);
+			printf("[%02i,   , (%02i, %02i)]\r\n", value, line, coluna);
 		else
-			printf("[%02i, %i, (%02i, %02i)]\r\n", value, token, line, coluna);
+			printf("[%02i, %02i, (%02i, %02i)]\r\n", value, token, line, coluna);
 	}
 
 	return true;

@@ -130,12 +130,17 @@
     <ClCompile Include="Compilador.cpp" />
     <ClCompile Include="ControlFile.cpp" />
     <ClCompile Include="Analise.cpp" />
+    <ClCompile Include="GeradorSML.cpp" />
     <ClCompile Include="Tokens.cpp" />
     <ClCompile Include="Tokens.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Analise.hpp" />
     <ClInclude Include="ControlFile.hpp" />
+    <ClInclude Include="GeradorSML.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="SIMPLE.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

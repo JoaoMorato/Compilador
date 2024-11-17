@@ -1,6 +1,7 @@
 #include "Tokens.hpp"
 #include "ControlFile.hpp"
 #include "Analise.hpp"
+#include "GeradorSML.hpp"
 
 #include <iostream>
 #include <vector>
@@ -96,12 +97,10 @@ bool Lexica(ControlFile& c) {
 }
 
 int main() {
-	std::string file = "F:\\Projetos\\Compilador\\Compilador\\SIMPLE.txt"; // Insira o nome do arquivo aqui
+	std::string file = "D:\\Projetos\\Compilador\\Compilador\\SIMPLE.txt"; // Insira o nome do arquivo aqui
 
 	ControlFile c = ControlFile(file);
 	bool ok = true;
-
-	Token t;
 
 	ok = Lexica(c) && ok;
 	c.Reset();
@@ -113,8 +112,10 @@ int main() {
 	printf("\r\n");
 
 	c.Close();
-	if (ok)
+	if (ok) {
+		GerarSML("teste.txt");
 		printf("Execucao terminada com sucesso.");
+	}
 	else
 		printf("Execucao terminada com erro(s).");
 }

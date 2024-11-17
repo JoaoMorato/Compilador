@@ -111,15 +111,18 @@ std::list<std::tuple<int, std::tuple<int, int, int>, bool>> Token::merge = {
 	{-100, {62, 41, 0}, false}, // input a
 	{-100, {64, 41, 0}, false}, // print a
 	{-100, {61, 0, 0}, false}, // rem
-	{0, {51, -100, 0}, false}, // 1 {tag: -100}
-	{0, {51, 67, 0}, false}, // 1 end
+	{0, {0, 0, -5}, false}, // rem
+	{0, {0, 51, -100}, false}, // 1 {tag: -100}
+	{0, {0, 51, 67}, false}, // 1 end
 	{0, {10, 0, 0}, false}, // <ENTER>
 	{0, {3, 0, 0}, false}, // EOF
 };
 
-std::list<std::tuple<std::string, bool>> Token::variables = {};
+std::list<std::tuple<std::string, bool, bool>> Token::variables = {};
 
 bool Token::end = false;
+
+std::list<std::vector<std::tuple<int, std::string>>> Token::tokensRegisted = {};
 
 int Token::GetToken(std::string str) {
 	int posi = 0;
@@ -166,17 +169,18 @@ int Token::GetToken(std::string str) {
 	return std::get<1>(t.front());
 }
 
-int Token::RegisterVariable(std::string str) {
-	variables.push_back({ str, false });
+int Token::RegisterVariable(std::string str, bool label) {
+	variables.push_back({ str, false, label});
 	return variables.size() - 1;
 }
 
-int Token::CheckVariables(std::string str) {
+int Token::CheckVariables(std::string str, bool label) {
 	int posi = 0;
 
 	for (auto i = variables.begin(); i != variables.end(); ++i) {
 		std::string s = std::get<0>(*i);
-		if (str == s) break;
+		bool l = std::get<2>(*i);
+		if (str == s && label == l) break;
 		posi++;
 	}
 
@@ -196,7 +200,7 @@ void Token::InitVariable(std::string str) {
 	for (auto i = variables.begin(); i != variables.end(); ++i) {
 		std::string s = std::get<0>(*i);
 		if (str != s) continue;
-		*i = { str, true };
+		*i = { str, true, std::get<2>(*i) };
 		return;
 	}
 }

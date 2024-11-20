@@ -65,7 +65,7 @@ bool Sintatica(ControlFile& c) {
 		ok = AnaliseLexica(line, txt) && ok;
 
 	if (!Token::end)
-		printf("ERRO: Token 'end' nao encontrado. (%i, 1)\r\n", line);
+		printf("ERRO: Token 'end' nao encontrado. (%li, 1)\r\n", line);
 
 	return ok && Token::end;
 }

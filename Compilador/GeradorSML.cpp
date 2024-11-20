@@ -37,9 +37,9 @@ int Label(std::list<std::tuple<std::string, int>>& a, std::string value) {
 }
 
 void WriteFile(std::list<std::tuple<int, int>> lista, const char* file) {
-	FILE* f;
-	fopen_s(&f, file, "w");
-	if (f == 0)
+	std::ofstream f;
+	f.open(file);
+	if (!f.is_open())
 		return;
 	for (auto i : lista) {
 		char buff[6] = { 0 };
@@ -52,10 +52,10 @@ void WriteFile(std::list<std::tuple<int, int>> lista, const char* file) {
 		else
 			std::snprintf(buff, 6, "+%04i", p1);
 
-		fwrite(buff, 1, 5, f);
-		fwrite("\n", 1, 1, f);
+		f.write(buff, 5);
+		f.write("\n", 1);
 	}
-	fclose(f);
+	f.close();
 }
 
 std::list<std::vector<std::tuple<int, std::string>>> Otimizar(std::list<std::vector<std::tuple<int, std::string>>> lista) {
